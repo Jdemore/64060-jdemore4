@@ -81,3 +81,5 @@ barplot(avg_by_class, main = "Avg Revenue by Publisher Class", xlab = "Publisher
 plot(TopSales$avgPlaytime, TopSales$revenue, main="Revenue Vs. Avg Playtime", xlab="Avg Playtime", ylab="Revenue")
 ```
 
+# Q6, Q7
+### Github link: https://github.com/Jdemore/64060-jdemore4/tree/main/Assignment_1
