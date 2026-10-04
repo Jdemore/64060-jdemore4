@@ -19,6 +19,8 @@ for (pkg in packages) {
 }
 ```
 
+### Helpers / things I reused.
+
 ```{r}
 # helper fn's
 
@@ -33,6 +35,15 @@ normalize <- function(data, model) {
   data[predictors]
 }
 
+# accuracy fn for knn
+knnAcc <- function(k, trainX, testX, trainY, testY) {
+  mean(knn(trainX, testX, cl = trainY, k = k) == testY)
+}
+
+# cross table helper
+knnCross <- function(k, trainX, testX, trainY, testY) {
+  CrossTable(testY, knn(trainX, testX, cl = trainY, k = k), prop.chisq = FALSE)
+}
 ```
 
 ### Data Setup & Inspection
@@ -156,4 +167,67 @@ tNorm <- normalize(training, normModel)
 vNorm <- normalize(validation, normModel)
 cNorm <- normalize(sCust, normModel)
 ```
+
+# **Question 1** k-NN for sCust
+Success as 1 (loan accept) && cutoff 0.5.
+-- with this one; cutoff is irrelevant since nearest neighbor will be 0 or 1
+
+```{r}
+knn(tNorm, cNorm, cl = training$Personal.Loan, k=1)
+```
+### Classified as not accepted [Level 0].
+
+# **Question 2** Choice of k that balances over-fitting&ignorance
+
+```{r}
+# odds here >> evens produce ties between yes-no
+kTest <- seq(1, 49, by = 2)
+acc <- sapply(kTest, knnAcc, tNorm, vNorm, training$Personal.Loan, validation$Personal.Loan)
+acc
+
+# exclude k==1 since it would just mimic its closest neighbor & that's
+# the definition of overfitting.
+begone <- kTest == 1
+choice <- kTest[!begone][which.max(acc[!begone])]
+choice
+max(acc[!begone])
+plot(kTest, acc)
+```
+
+### I would choose k==5 for this, as it has the highest accuracy for k != 1.
+Plot for great justice. Trend shows consistent downward tendency.
+
+# **Question 3** Confusion Matrix for validation on best  k { choice } var
+
+```{r}
+# Cross table {def above} 
+knnCross(choice, tNorm, vNorm, training$Personal.Loan, validation$Personal.Loan)
+```
+
+# **Question 4** Classify sCust with best k { chocie } of 5
+
+```{r}
+knn(tNorm, cNorm, cl = training$Personal.Loan, k = choice)
+```
+
+### Customer still gets rejected. He's having a bad day, we re-ran his credit.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
