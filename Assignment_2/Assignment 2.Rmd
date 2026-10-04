@@ -27,11 +27,16 @@ uCount <- function(x) {
   length(unique(x))
 }
 
+# normalizations for data
+normalize <- function(data, model) {
+  data[qVars] <- predict(model, data[qVars])
+  data[predictors]
+}
+
 ```
 
 ### Data Setup & Inspection
-
-Sorted Ascending by unique values; we can 
+Sorted Ascending by unique values to help id cat's. not dogs. cats.
 
 ```{r}
 # Reads UniversalBank.csv; str shows structure (colnam, type, 10 values)
@@ -58,6 +63,7 @@ sort(sapply(uBank, uCount))
 ```
 ### Bad data || but instructions say to keep all predictors except-listed.
 It was seen.
+
 ```{r}
 # summary showed -3 experience value;... assuming this is correlated to -3 years
 # it's likely bad data -- these rows //should// be removed.
@@ -75,7 +81,7 @@ all(uBank$Personal.Loan[uBank$Experience<0] == 0)
 ### Customer definition from the assignment (for q1, q4)
 
 ```{r}
-sample_customer <- data.frame(
+sCust <- data.frame(
   Age = 40,
   Experience = 10,
   Income = 84,
@@ -99,7 +105,7 @@ once edu is factored we will remove id, zip, personal loan
 It would have been cool to geoplot them on a heatmap.
 
 ```{r}
-setdiff(names(uBank), names(sample_customer))
+setdiff(names(uBank), names(sCust))
 ```
 ### Drop ID, Zip then split nonbinary categoricals
 
@@ -114,10 +120,40 @@ uBank$ZIP.Code <- NULL
 
 summary(uBank)
 ```
-##
 
 ```{r}
 # only remaining Personal.Loan (acceptance) is missing from the sample customer.
-setdiff(names(uBank), names(sample_customer))
+setdiff(names(uBank), names(sCust))
+```
+### Let's do some ML.. finally.
+
+```{r}
+# this one needs to be categorical since it's our target. other cat binarys need
+# to stay 0-1 for euclid distance on knn.
+uBank$Personal.Loan <- factor(uBank$Personal.Loan)
+
+# make our randomness not randomness at all.
+set.seed(1234567890)
+# partition for t&v
+split = createDataPartition(uBank$Personal.Loan, p=0.6, list = FALSE)
+# training gets 60% and validation 40% // split indexes at 60% of data
+training <- uBank[split,]
+validation <- uBank[-split,]
+# define predictors; which are all cols except personal loan //via setdiff
+predictors <- setdiff(names(uBank), "Personal.Loan")
+# define quant & cat: setdiff predictors&qVars to get cats. === (1- X) for names
+qVars <- c("Age", "Experience", "Income", "Family", "CCAvg", "Mortgage")
+cVars <- setdiff(predictors, qVars)
+```
+
+### Normalization...
+Note I defined this above myself.
+
+```{r}
+# normalization of model, training, validation, and sample customer
+normModel <- preProcess(training[qVars])
+tNorm <- normalize(training, normModel)
+vNorm <- normalize(validation, normModel)
+cNorm <- normalize(sCust, normModel)
 ```
 
