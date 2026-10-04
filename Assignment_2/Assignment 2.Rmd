@@ -47,15 +47,23 @@ sapply(uBank, uCount)
 # sorted
 sort(sapply(uBank, uCount))
 
+```
+### Bad data || but instructions say to keep all predictors except-listed.
+It was seen.
+```{r}
 # summary showed -3 experience value;... assuming this is correlated to -3 years
 # it's likely bad data -- these rows //should// be removed.
 # especially since all - experience customers declined the loan.
-sort(uBank$Experience)
 summary(uBank$Experience)
+sort(uBank$Experience)
 uBank[uBank$Experience < 0, ]
 uBank[uBank$Experience < 0, c("Experience", "Personal.Loan")]
-# 
+# verify they're all negative. true == all declined.
+# this is === if ALL people with negative experience are decliend, print true
+all(uBank$Personal.Loan[uBank$Experience<0] == 0)
 ```
+
+
 ### Customer definition from the assignment (for q1, q4)
 
 ```{r}
@@ -74,5 +82,15 @@ sample_customer <- data.frame(
   Online = 1,
   CreditCard = 1
 )
+```
+
+### Sample has Edu1,Edu2, Edu3 so we can factor edu
+Set diff shows id / zip / edu / pers loan as differences
+once edu is factored we will remove id, zip, personal loan
+(though i would have assumed zip would be relevant, location matters).
+It would have been cool to geoplot them on a heatmap.
+
+```{r}
+setdiff(names(uBank), names(sample_customer))
 ```
 
