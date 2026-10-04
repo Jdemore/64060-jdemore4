@@ -9,6 +9,16 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+### Small tidbits about my style;
+```
+
+=== logically equivalent to;
+== is equal to
+{ } usaully used to point to a variable name or choice that varies from directions
+        (i try to make my life easier from a coding side)
+
+```
+        
 ```{r}
 # short block to check if the packages are installed; will download and install any that are not.
 packages <- c("class", "caret", "gmodels")
@@ -81,11 +91,13 @@ sort(sapply(uBank, uCount))
 # Zip Code and ID (arith not going to do anything here) but we're dropping
 
 # Numeric:
-# Family (even though count is small), Age, Experience, CCAvg, Incomem, Mortgage
+# Family (even though count is small), Age, Experience, CCAvg, Income, Mortgage
 
 ```
 ### Bad data || but instructions say to keep all predictors except-listed.
 It was seen.
+Decision to keep was made { assignment asked for predictors to be kept }.
+Results would have likely been different without the 52 potentially bad-data driven FNs.
 
 ```{r}
 # summary showed -3 experience value;... assuming this is correlated to -3 years
@@ -94,9 +106,9 @@ It was seen.
 summary(uBank$Experience)
 head(sort(uBank$Experience))
 head(uBank[uBank$Experience < 0, ])
-head(uBank[uBank$Experience < 0, c("Experience", "Personal.Loan")])
+nrow(uBank[uBank$Experience < 0, c("Experience", "Personal.Loan")])
 # verify they're all negative. true == all declined.
-# this is === if ALL people with negative experience are decliend, print true
+# this is === if ALL people with negative experience are declined, print true
 all(uBank$Personal.Loan[uBank$Experience<0] == 0)
 ```
 
@@ -208,15 +220,25 @@ plot(kTest, acc)
 
 ### I would choose k==5 for this, as it has the highest accuracy for k != 1.
 Plot for great justice. Trend shows consistent downward tendency.
+k==49, the accuracy falls to ~92.6%, which is pretty close to the naive baseline.
+Larger K would ignore the predictors here.
 
 # **Question 3** Confusion Matrix for validation on best  k { choice } var
+Cross table shows Acc 95.7%(1806+108 TN,TP/Total), but missed more than 40% of acceptance {sens==56%}.
+Still concerned about the negative experience data rows in our sample.
 
 ```{r}
 # Cross table {def above} 
 knnCross(choice, tNorm, vNorm, training$Personal.Loan, validation$Personal.Loan)
+
+# summary fn ^^above used here
+q3Summary <- rbind(
+  Validation = knnSummary(choice, tNorm, vNorm, training$Personal.Loan, validation$Personal.Loan)
+)
+round(q3Summary, 4)
 ```
 
-# **Question 4** Classify sCust with best k { chocie } of 5
+# **Question 4** Classify sCust with best k { choice } of 5
 
 ```{r}
 knn(tNorm, cNorm, cl = training$Personal.Loan, k = choice)
@@ -262,7 +284,35 @@ q5Summary <- rbind(
   Validation = knnSummary(choice, q5tNorm, q5vNorm, q5Training$Personal.Loan, q5Validation$Personal.Loan),
   Test = knnSummary(choice, q5tNorm, q5teNorm, q5Training$Personal.Loan, q5Test$Personal.Loan)
 )
-round(q5Summary, 6) 
+round(q5Summary, 4) 
 
 ```
-### 
+### **Question 5** Comparison || k==5
+
+```
+From chart above - Accuracy for Training(97.48%), Validation(96.07%), and Test(96.10%)
+Accuracy is the highest on the training set, because each row counts as 1 of the 5 knn's
+Validation/Test sets don't carry this property, so the accuracy drops slightly.
+
+Sensitivity{recall} shows much different values. Training(73.75%), Validation(59.72%) and Test(60.42%)
+Validation and test are essentially equal. Training is higher because each training 
+row counts itself as one of its 5 neighbors.
+
+Specificity, Precision are both near-perfect for all cases. Very few FP in any set.
+
+Most of the reported errors (excluding the exceptionally few FP, 2 in total) are from FN
+
+Validation/Testing sets both are better indicators of actual model performance here,
+since they're not counting a row as its own nearest neighbor. 
+
+Sampling noise is likely the cause for the light differences in values of validation/testing.
+
+False negatives would likely be from the low acceptance rate (9.6%). The nearest neighbors
+of these small sets have a smaller chance of also having acceptance==1. Since the cutoff
+is 0.5, this would mean 3 of 5 would have to accept; and without the self row count in training
+it becomes less likely.
+
+Overall - the models do not seem to be overfit, and there are very few false positives -
+however, it only carries ~60% accuracy on a true positive {===sensitivity}. this value
+could use more tuning to make the model better, but other metrics look good.
+```
