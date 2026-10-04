@@ -92,9 +92,9 @@ It was seen.
 # it's likely bad data -- these rows //should// be removed.
 # especially since all - experience customers declined the loan.
 summary(uBank$Experience)
-sort(uBank$Experience)
-uBank[uBank$Experience < 0, ]
-uBank[uBank$Experience < 0, c("Experience", "Personal.Loan")]
+head(sort(uBank$Experience))
+head(uBank[uBank$Experience < 0, ])
+head(uBank[uBank$Experience < 0, c("Experience", "Personal.Loan")])
 # verify they're all negative. true == all declined.
 # this is === if ALL people with negative experience are decliend, print true
 all(uBank$Personal.Loan[uBank$Experience<0] == 0)
@@ -255,12 +255,8 @@ knnCross(choice, q5tNorm, q5vNorm, q5Training$Personal.Loan, q5Validation$Person
 knnCross(choice, q5tNorm, q5teNorm, q5Training$Personal.Loan, q5Test$Personal.Loan)
 
 # summary table { built from fn ^^ above / near top } 
-q5Summary <- rbind(
-  Training = knnSummary(choice, q5tNorm, q5tNorm, q5Training$Personal.Loan, q5Training$Personal.Loan),
-  Validation = knnSummary(choice, q5tNorm, q5vNorm, q5Training$Personal.Loan, q5Validation$Personal.Loan),
-  Test = knnSummary(choice, q5tNorm, q5teNorm, q5Training$Personal.Loan, q5Test$Personal.Loan)
-)
-# summary table for these - training on itself, then validation, then test
+# training on itself, then validation, then test
+# -- based on metrics in slides. recall===sensitivity
 q5Summary <- rbind(
   Training = knnSummary(choice, q5tNorm, q5tNorm, q5Training$Personal.Loan, q5Training$Personal.Loan),
   Validation = knnSummary(choice, q5tNorm, q5vNorm, q5Training$Personal.Loan, q5Validation$Personal.Loan),
