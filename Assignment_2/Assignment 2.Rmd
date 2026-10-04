@@ -101,7 +101,17 @@ It would have been cool to geoplot them on a heatmap.
 ```{r}
 setdiff(names(uBank), names(sample_customer))
 ```
-```{r}
+### Drop ID, Zip then split nonbinary categoricals
 
+```{r}
+# categorizes education via factor, binds to df and removes dropped cols
+# note sep by _ is only there to match the sample customer.
+uBank$Education <- factor(uBank$Education)
+uBank <- cbind(uBank, predict(dummyVars(~ Education, data = uBank, sep = "_"), uBank))
+uBank$Education <- NULL
+uBank$ID <- NULL
+uBank$ZIP.Code <- NULL
+
+summary(uBank)
 ```
 
