@@ -47,6 +47,14 @@ sapply(uBank, uCount)
 # sorted
 sort(sapply(uBank, uCount))
 
+# categoricals: 
+# Personal.Loan [target outcome], Securities.Account, CD.Account, Online,
+# CreditCard, Education [this needs to be split]
+# Zip Code and ID (arith not going to do anything here) but we're dropping
+
+# Numeric:
+# Family (even though count is small), Age, Experience, CCAvg, Incomem, Mortgage
+
 ```
 ### Bad data || but instructions say to keep all predictors except-listed.
 It was seen.
@@ -92,5 +100,8 @@ It would have been cool to geoplot them on a heatmap.
 
 ```{r}
 setdiff(names(uBank), names(sample_customer))
+```
+```{r}
+
 ```
 
