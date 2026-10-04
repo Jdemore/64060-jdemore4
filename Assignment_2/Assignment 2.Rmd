@@ -44,6 +44,18 @@ knnAcc <- function(k, trainX, testX, trainY, testY) {
 knnCross <- function(k, trainX, testX, trainY, testY) {
   CrossTable(testY, knn(trainX, testX, cl = trainY, k = k), prop.chisq = FALSE)
 }
+
+# summary for the knn { used with end/knnCross comparison }
+knnSummary <- function(k, trainX, testX, trainY, testY) {
+  cm <- table(factor(testY, levels = c("0", "1")),
+              factor(knn(trainX, testX, cl = trainY, k = k), levels = c("0", "1")))
+  TN <- cm[1, 1]; FP <- cm[1, 2]; FN <- cm[2, 1]; TP <- cm[2, 2]
+  data.frame(n = sum(cm), TN, FP, FN, TP,
+             Accuracy = (TP + TN) / sum(cm),
+             Sensitivity = TP / (TP + FN),
+             Specificity = TN / (TN + FP),
+             Precision = TP / (TP + FP))
+}
 ```
 
 ### Data Setup & Inspection
@@ -212,22 +224,48 @@ knn(tNorm, cNorm, cl = training$Personal.Loan, k = choice)
 
 ### Customer still gets rejected. He's having a bad day, we re-ran his credit.
 
+# **Question 5** Repartition; training->validation->test. k-NN with 5 && cMatr
+so.. do it all again. 
 
+```{r}
+# Three way split 50/30/20 // train first, then split the leftover
+# reset seed so this split lands the same every run
+set.seed(1234567890)
 
+# training gets 50% (2500 rows)
+q5Split <- createDataPartition(uBank$Personal.Loan, p = 0.5, list = FALSE)
+q5Training <- uBank[q5Split, ]
+# the other 50% is leftover (2500 rows)
+q5Rest <- uBank[-q5Split, ]
 
+# .6 of the leftover is validation (1500 = 30% of total); remaining is test (1000 = 20%)
+q5RestSplit <- createDataPartition(q5Rest$Personal.Loan, p = 0.6, list = FALSE)
+q5Validation <- q5Rest[q5RestSplit, ]
+q5Test <- q5Rest[-q5RestSplit, ]
 
+# normalize: fit on q5 training only, apply to all three
+q5NormModel <- preProcess(q5Training[qVars])
+q5tNorm <- normalize(q5Training, q5NormModel)
+q5vNorm <- normalize(q5Validation, q5NormModel)
+q5teNorm <- normalize(q5Test, q5NormModel)
 
+# confusion matrices at best k { choice }: training on itself, then validation, then test
+knnCross(choice, q5tNorm, q5tNorm, q5Training$Personal.Loan, q5Training$Personal.Loan)
+knnCross(choice, q5tNorm, q5vNorm, q5Training$Personal.Loan, q5Validation$Personal.Loan)
+knnCross(choice, q5tNorm, q5teNorm, q5Training$Personal.Loan, q5Test$Personal.Loan)
 
-
-
-
-
-
-
-
-
-
-
-
-
+# summary table { built from fn ^^ above / near top } 
+q5Summary <- rbind(
+  Training = knnSummary(choice, q5tNorm, q5tNorm, q5Training$Personal.Loan, q5Training$Personal.Loan),
+  Validation = knnSummary(choice, q5tNorm, q5vNorm, q5Training$Personal.Loan, q5Validation$Personal.Loan),
+  Test = knnSummary(choice, q5tNorm, q5teNorm, q5Training$Personal.Loan, q5Test$Personal.Loan)
+)
+# summary table for these - training on itself, then validation, then test
+q5Summary <- rbind(
+  Training = knnSummary(choice, q5tNorm, q5tNorm, q5Training$Personal.Loan, q5Training$Personal.Loan),
+  Validation = knnSummary(choice, q5tNorm, q5vNorm, q5Training$Personal.Loan, q5Validation$Personal.Loan),
+  Test = knnSummary(choice, q5tNorm, q5teNorm, q5Training$Personal.Loan, q5Test$Personal.Loan)
+)
+round(q5Summary, 6)
+```
 
