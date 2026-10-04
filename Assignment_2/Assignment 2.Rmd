@@ -114,4 +114,10 @@ uBank$ZIP.Code <- NULL
 
 summary(uBank)
 ```
+##
+
+```{r}
+# only remaining Personal.Loan (acceptance) is missing from the sample customer.
+setdiff(names(uBank), names(sample_customer))
+```
 
