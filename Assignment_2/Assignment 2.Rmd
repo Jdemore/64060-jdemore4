@@ -266,6 +266,7 @@ q5Summary <- rbind(
   Validation = knnSummary(choice, q5tNorm, q5vNorm, q5Training$Personal.Loan, q5Validation$Personal.Loan),
   Test = knnSummary(choice, q5tNorm, q5teNorm, q5Training$Personal.Loan, q5Test$Personal.Loan)
 )
-round(q5Summary, 6)
-```
+round(q5Summary, 6) 
 
+```
+### 

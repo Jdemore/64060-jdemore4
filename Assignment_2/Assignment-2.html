@@ -1190,11 +1190,14 @@ q5Summary &lt;- rbind(
   Validation = knnSummary(choice, q5tNorm, q5vNorm, q5Training$Personal.Loan, q5Validation$Personal.Loan),
   Test = knnSummary(choice, q5tNorm, q5teNorm, q5Training$Personal.Loan, q5Test$Personal.Loan)
 )
-round(q5Summary, 6)</code></pre>
+round(q5Summary, 6) </code></pre>
 <pre><code>##               n   TN FP FN  TP Accuracy Sensitivity Specificity Precision
 ## Training   2500 2260  0 63 177 0.974800    0.737500    1.000000  1.000000
 ## Validation 1500 1355  1 58  86 0.960667    0.597222    0.999263  0.988506
 ## Test       1000  903  1 38  58 0.961000    0.604167    0.998894  0.983051</code></pre>
+<div id="section" class="section level3">
+<h3></h3>
+</div>
 </div>
 
 
