@@ -1,0 +1,78 @@
+---
+title: "Assignment_2"
+author: "Joseph Demore"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# short block to check if the packages are installed; will download and install any that are not.
+packages <- c("class", "caret", "gmodels")
+
+for (pkg in packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) install.packages(pkg, repos = "https://cloud.r-project.org")
+  library(pkg, character.only = TRUE)
+}
+```
+
+```{r}
+# helper fn's
+
+# fn to count unique
+uCount <- function(x) {
+  length(unique(x))
+}
+
+```
+
+### Data Setup & Inspection
+
+Sorted Ascending by unique values; we can 
+
+```{r}
+# Reads UniversalBank.csv; str shows structure (colnam, type, 10 values)
+uBank <- read.csv("UniversalBank.csv")
+str(uBank)
+
+# summary to check data
+summary(uBank)
+
+# uCount on each col to help identify categoricals
+sapply(uBank, uCount)
+
+# sorted
+sort(sapply(uBank, uCount))
+
+# summary showed -3 experience value;... assuming this is correlated to -3 years
+# it's likely bad data -- these rows //should// be removed.
+# especially since all - experience customers declined the loan.
+sort(uBank$Experience)
+summary(uBank$Experience)
+uBank[uBank$Experience < 0, ]
+uBank[uBank$Experience < 0, c("Experience", "Personal.Loan")]
+# 
+```
+### Customer definition from the assignment (for q1, q4)
+
+```{r}
+sample_customer <- data.frame(
+  Age = 40,
+  Experience = 10,
+  Income = 84,
+  Family = 2,
+  CCAvg = 2,
+  Education_1 = 0,
+  Education_2 = 1,
+  Education_3 = 0,
+  Mortgage = 0,
+  Securities.Account = 0,
+  CD.Account = 0,
+  Online = 1,
+  CreditCard = 1
+)
+```
+
