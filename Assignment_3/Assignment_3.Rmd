@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 # short block to check if the packages are installed; will download and install any that are not.
-packages <- c("class", "caret", "gmodels", "e1071", "reshape2")
+packages <- c("e1071")
 
 for (pkg in packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) install.packages(pkg, repos = "https://cloud.r-project.org")
@@ -57,11 +57,12 @@ PtA <- table(CC=training$CC, Loan=training$Loan, Online = training$Online)
 ftable(PtA, row.vars = c("CC", "Loan"), col.vars="Online")
 ```
 
-## Part B - Classifying Cust actively using / accePtAnce?
+## Part B - Classifying Cust actively using / acceptance?
 
 Probability is 9.85% (rounded).
+^{Note this would change with seed}.
 ```{r}
-PtB_accept <- PtA["1", "1", "1"] #loan accePtAnce
+PtB_accept <- PtA["1", "1", "1"] #loan acceptance
 PtB_decline <- PtA["1", "0", "1"] #loan decline
 PtB_prob <- PtB_accept / (PtB_accept + PtB_decline)
 round(PtB_prob, 4) 
@@ -79,9 +80,9 @@ addmargins(tLoanCC)
 
 ```
 
-## Part D -- Compute Con/Marg probs
+## Part D - Compute Con/Marg probs
 ```{r}
-#props as p. margin1 row sums to 1; cells = p(pred,loan)
+#props as p. margin1 row sums to 1; p(pred|loan)
 pOnline <- prop.table(tLoanOnline, margin=1)
 pCC <- prop.table(tLoanCC, margin=1)
 #loan shares of training = priors (p(loan 0), p(loan 1)
@@ -98,10 +99,10 @@ PtD_prob <- c(
 round(PtD_prob, 4)
 ```
 
-## Part E Naive Bayes
+## Part E - Naive Bayes
 ```{r}
 #product loan=1 [1:3] vs loan=0 [4:6] -- normalize
-#i think this would have turned out better with linear algebra tho
+#i think this would have been more fun with linear algebra tho
 #turning D probs to matrix & exp(log(matr) %*% rep(1,3))
 nYes <- prod(PtD_prob[1:3])
 nNo <- prod(PtD_prob[4:6])
@@ -111,8 +112,14 @@ round(PtE_prob, 4)
 
 ## Part F - Compare values
 ```
-A few statistics on the probability. The actual percentages aren't too far off;
-however the 
+Diff&Ratio to compare values.
+PartB is higher probability of acceptance by .0279%
+PartB is higher ratio by .284%
+None of these values classify beyond the threshhold of 0.5, so it does not 
+impact our sample cust.
+The value in PtB is more accurate as it only uses matching records.
+No independence assumption is made via PtB method. 
+PtE  uses all records & assumes cc/online are independent, given loan.
 ```
 
 ```{r}
@@ -124,11 +131,32 @@ PtF_ratio <- (PtB_prob / PtE_prob - 1) * 100
 round(PtF_ratio, 3)
 ```
 
+## Part G - naiveBayes() model output vs Part E
+```
+Entries for P(Loan=1 | CC=1, Online=1): only the six PtD values.
+Loan x CC table: the CC=1 column, both Loan rows.
+Loan x Online table: Online=1 column, both Loan rows.
+Loan row totals, giving P(Loan=1) and P(Loan=0).
+The CC=0 and Online=0 columns are not needed for this customer.
+```
 
+```{r}
+#fit nb on training; factors -> categorical tables (laplace=0 default, no smoothing)
+PtG_model <- naiveBayes(Loan ~ CC + Online, data = training)
+#a-priori = p(loan); conditional tables: rows = loan, cols = predictor level
+PtG_model
+#cust profile: cc=1, online=1 (levels must match training factors)
+PtG_cust <- data.frame(CC = factor(1, levels = c(0,1)),
+                       Online = factor(1, levels = c(0,1)))
+#type="raw" -> class probs instead of label; [1,"1"] = p(loan=1)
+PtG_prob <- predict(PtG_model, PtG_cust, type = "raw")[1, "1"]
+round(PtG_prob, 4)
+#compare all three estimates
+round(c(B = PtB_prob, E = PtE_prob, G = PtG_prob), 4)
+```
 
-
-
-
-
-
+naiveBayes() gives P(Loan=1 | CC=1, Online=1) = `r round(PtG_prob, 4)`
+the same as Part E (`r round(PtE_prob, 4)`).
+Same math as Part E: the product of the conditional probabilities and the prior
+for each loan class, divided by the sum over both classes.
 
