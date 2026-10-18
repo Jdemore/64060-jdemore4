@@ -45,13 +45,84 @@ validation <- bank[-split,]
 #check each && validate
 nrow(training)
 nrow(validation)
+#compare rows of each sum to original data rows for quick test
+if (nrow(training) + nrow(validation) != nrow(bank)) {
+  print("ERROR: Training + Validation != Bank rows")
+}
+```
+## Part A - Pivot Table {R via ftable}
+```{r}
+#pivot table. basic r, not w/ reshape2.
+PtA <- table(CC=training$CC, Loan=training$Loan, Online = training$Online)
+ftable(PtA, row.vars = c("CC", "Loan"), col.vars="Online")
 ```
 
+## Part B - Classifying Cust actively using / accePtAnce?
 
+Probability is 9.85% (rounded).
+```{r}
+PtB_accept <- PtA["1", "1", "1"] #loan accePtAnce
+PtB_decline <- PtA["1", "0", "1"] #loan decline
+PtB_prob <- PtB_accept / (PtB_accept + PtB_decline)
+round(PtB_prob, 4) 
+```
 
+## Part C - Two tables loans as f(online) && loans as f(cc)
+```{r}
+#rows x online
+tLoanOnline <- table(Loan = training$Loan, Online = training$Online)
+#r-c summaries to check
+addmargins(tLoanOnline)
+#rows x cc
+tLoanCC <- table(Loan = training$Loan, CC = training$CC)
+addmargins(tLoanCC)
 
+```
 
+## Part D -- Compute Con/Marg probs
+```{r}
+#props as p. margin1 row sums to 1; cells = p(pred,loan)
+pOnline <- prop.table(tLoanOnline, margin=1)
+pCC <- prop.table(tLoanCC, margin=1)
+#loan shares of training = priors (p(loan 0), p(loan 1)
+pLoan <- prop.table(table(training$Loan))
+#r/c=loan/pred
+PtD_prob <- c(
+  "P(CC=1 | Loan=1)"     = pCC["1", "1"],
+  "P(Online=1 | Loan=1)" = pOnline["1", "1"],
+  "P(Loan=1)"            = pLoan[["1"]],
+  "P(CC=1 | Loan=0)"     = pCC["0", "1"],
+  "P(Online=1 | Loan=0)" = pOnline["0", "1"],
+  "P(Loan=0)"            = pLoan[["0"]]
+)
+round(PtD_prob, 4)
+```
 
+## Part E Naive Bayes
+```{r}
+#product loan=1 [1:3] vs loan=0 [4:6] -- normalize
+#i think this would have turned out better with linear algebra tho
+#turning D probs to matrix & exp(log(matr) %*% rep(1,3))
+nYes <- prod(PtD_prob[1:3])
+nNo <- prod(PtD_prob[4:6])
+PtE_prob <- nYes / (nYes+nNo)
+round(PtE_prob, 4)
+```
+
+## Part F - Compare values
+```
+A few statistics on the probability. The actual percentages aren't too far off;
+however the 
+```
+
+```{r}
+#gap between estimates, in percentage points
+PtF_diff <- (PtB_prob - PtE_prob) * 100
+round(PtF_diff, 4)
+#relative gap: how much higher B's estimate is than E's, in %
+PtF_ratio <- (PtB_prob / PtE_prob - 1) * 100
+round(PtF_ratio, 3)
+```
 
 
 
