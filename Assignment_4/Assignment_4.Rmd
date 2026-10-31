@@ -9,3 +9,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+# short block to check if the packages are installed; will download and install any that are not.
+packages <- c("factoextra", "flexclust")
+
+for (pkg in packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) install.packages(pkg, repos = "https://cloud.r-project.org")
+  library(pkg, character.only = TRUE)
+}
+```
+
