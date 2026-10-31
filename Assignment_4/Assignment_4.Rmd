@@ -177,6 +177,33 @@ sense with our 21 firm & no obvious data gabs. Loosest cluster was AGN-AHM-BAY-P
 and AHM is negative; so it's closer to other clusters than its own (technically)
 ```
 
+## b. Interpreting the clusters
+```{r}
+#names assigned from the centroids instead of cluster #, so they stay right if kmeans numbers them differently
+#added the names here after looking through the results to make the table cleaner
+nameClusters <- function(centers) {
+  clNames <- rep("High-Growth Risky Small Caps", nrow(centers))
+  clNames[which.max(centers[, "Market_Cap"])] <- "Larwge Profitable Leaders"
+  clNames[which.max(centers[, "PE_Ratio"])]   <- "Overvalued Underperformers"
+  clNames
+}
+
+clNames <- nameClusters(kmFinal$centers)
+pharma$cluster <- kmFinal$cluster
+pharma$clusterName <- clNames[kmFinal$cluster]
+
+#members
+tapply(pharma$Symbol, pharma$clusterName, paste, collapse = ", ")
+
+#centroids in original units, easier to read than z
+clProfile <- aggregate(pharmaNum, by = list(cluster = pharma$clusterName), FUN = mean)
+clProfile[, -1] <- round(clProfile[, -1], 2)
+clProfile
+
+#industry avg for comparison
+round(colMeans(pharmaNum), 2)
+```
+
 
 
 
