@@ -19,3 +19,23 @@ for (pkg in packages) {
 }
 ```
 
+## Setup
+```{r}
+pharma <- read.csv("Pharmaceuticals.csv")
+str(pharma)
+
+#vars 1-9 for clustering
+numVars <- c("Market_Cap", "Beta", "PE_Ratio", "ROE", "ROA",
+             "Asset_Turnover", "Leverage", "Rev_Growth", "Net_Profit_Margin")
+catVars <- c("Median_Recommendation", "Location", "Exchange")
+
+pharmaNum <- pharma[, numVars]
+rownames(pharmaNum) <- pharma$Symbol #tickers as row names so plots show firm labels
+
+summary(pharmaNum)
+colSums(is.na(pharmaNum)) #no missing
+```
+
+
+
+
