@@ -36,6 +36,139 @@ summary(pharmaNum)
 colSums(is.na(pharmaNum)) #no missing
 ```
 
+## a. Clustering the 21 firms
+
+### Normalize
+```{r}
+#euclidean distance is scale dependent, market cap (0.41 to 199) would drown out beta (0.18 to 1.11)
+#z-score: subtract mean, divide by sd
+pharmaNorm <- scale(pharmaNum)
+round(head(pharmaNorm), 2)
+```
+
+### Weights
+```{r}
+#check correlation before deciding on weights
+round(cor(pharmaNum), 2)
+```
+
+### Distance + outliers
+```{r}
+distance <- get_dist(pharmaNorm)
+fviz_dist(distance)
+
+#any firm more than 3 sd from the mean on a var
+maxZ <- apply(abs(pharmaNorm), 1, max)
+round(pharmaNorm[maxZ > 3, ], 2)
+```
+
+### Choosing k
+```{r}
+set.seed(123)
+fviz_nbclust(pharmaNorm, kmeans, method = "wss", k.max = 10, nstart = 25)
+
+set.seed(123)
+fviz_nbclust(pharmaNorm, kmeans, method = "silhouette", k.max = 10, nstart = 25)
+```
+
+```{r}
+#same checks as the plots in one table, plus smallest cluster size
+kStats <- function(k, data) {
+  set.seed(123)
+  km <- kmeans(data, centers = k, nstart = 25)
+  sil <- cluster::silhouette(km$cluster, dist(data))
+  c(k = k,
+    wss = round(km$tot.withinss, 1),
+    betweenTotal = round(km$betweenss / km$totss, 3), #share of variation between clusters
+    avgSil = round(mean(sil[, "sil_width"]), 3),
+    smallest = min(km$size))
+}
+
+kTable <- as.data.frame(t(sapply(2:8, kStats, data = pharmaNorm)))
+kTable
+```
+
+### Final model
+```{r}
+bestK <- 3
+
+set.seed(123)
+kmFinal <- kmeans(pharmaNorm, centers = bestK, nstart = 25) #25 random starts, keeps lowest wss
+kmFinal$size
+round(kmFinal$centers, 2)
+
+fviz_cluster(kmFinal, data = pharmaNorm, repel = TRUE, ggtheme = ggplot2::theme_minimal())
+```
+
+### Stability + quality
+```{r}
+#kmeans is stochastic, rerun w/ 50 seeds to see if same solution comes back
+runSeed <- function(seed, data, k) {
+  set.seed(seed)
+  round(kmeans(data, centers = k, nstart = 25)$tot.withinss, 2)
+}
+seedWss <- sapply(1:50, runSeed, data = pharmaNorm, k = bestK)
+table(seedWss) #all 50 the same = stable
+
+#silhouette per firm
+silFinal <- cluster::silhouette(kmFinal$cluster, dist(pharmaNorm))
+fviz_silhouette(silFinal, print.summary = FALSE)
+round(tapply(silFinal[, "sil_width"], kmFinal$cluster, mean), 3) #avg per cluster
+
+#separation: distance between centroids vs avg distance of firms to their own centroid
+round(dist(kmFinal$centers), 2)
+round(sqrt(kmFinal$withinss / kmFinal$size), 2)
+```
+
+### Manhattan distance check (flexclust)
+```{r}
+#same k, manhattan distance + median centroids (lecture: kcca w/ kmedians)
+#kcca has no nstart, so run 25 seeds and keep the one w/ the lowest total distance
+runKmed <- function(seed, data, k) {
+  set.seed(seed)
+  kcca(data, k = k, family = kccaFamily("kmedians"))
+}
+kmedRuns <- lapply(1:25, runKmed, data = pharmaNorm, k = bestK)
+kmedDist <- sapply(kmedRuns, info, "distsum")
+round(kmedDist, 2) #spread here = how much the start matters
+
+kmMed <- kmedRuns[[which.min(kmedDist)]]
+kmMed
+
+#apply the predict() function, no new data = clusters of the original firms
+medClusters <- predict(kmMed)
+split(rownames(pharmaNorm), medClusters)
+
+#compare to kmeans. rows = kmeans cluster, cols = kmedians cluster
+compTable <- table(kmeans = kmFinal$cluster, kmedians = medClusters)
+compTable
+randIndex(compTable) #adjusted rand: 1 = same grouping, 0 = no better than chance
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
