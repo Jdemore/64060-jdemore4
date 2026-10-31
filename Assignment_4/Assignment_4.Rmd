@@ -145,7 +145,37 @@ compTable
 randIndex(compTable) #adjusted rand: 1 = same grouping, 0 = no better than chance
 ```
 
+## Part A - Reasoning
 
+```
+Weights were left the same - no mention was made of these values holding more or less
+importance than any other values. 
+Z-score was used to normalize the scale since Euclidean distance is scale dependent.
+Market cap would have otherwise decided everything.
+Though weights weren't added manually, Euclidean distance ignores correlation, so
+size/profitability end up acting as though they have a higher weight. 
+ROE, ROA, Market Cap seem very correlated from the data/process used here.
+I also ran Manhatten distance (following our class lectures) since this is supposed
+to be better for when values are correlated - keeping the same lack of weights. 
+Size&Profitability would be the main ways these are determined anyway.
+Algo: kmeans w/ Euclidean distance; the 9 vars are all continuious numbers, with
+the goal being to split firms into non overlapping groups (thus why we used kmeans)
+nstart=25 (from slides, but runs 25 times from random starts) with static seed set.
+Also ran against 50 other seeds to verify the result would be the same (for thoroughness)
+Manhattan distance showed the 11 major firms came out the same, with 3 minor ones moving.
+I maintained Euclidean distance for the assignment since it's more stable.
+Outliers: Allergan, Chatterm
+Both are >3 SD from mean on any vars.
+I chose K=3 for my clustering because the silhouette peaks at k=3, and the elbow
+plot had the larger drops between 1-2 and 2-3. K=2 would have been too small to have
+meaningful clusters, so I went with 3. I also tried running this with k=5, but some
+of the groups weren't visually meaningful, so I kept k=3 to maintain the clarity.
+Our data set is rather small, so this made sense to me. More technically, I would
+say that k=5 made the clusters weaker, and also to note; they fell apart under manhattan.
+Quality: Avg silhouette .280; clusters are separated but not too sharply. This made
+sense with our 21 firm & no obvious data gabs. Loosest cluster was AGN-AHM-BAY-PHA (.136)
+and AHM is negative; so it's closer to other clusters than its own (technically)
+```
 
 
 
