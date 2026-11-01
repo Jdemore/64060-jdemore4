@@ -264,7 +264,24 @@ for (v in catVars) {
 }
 ```
 
-
+## Part C - Pattern
+```
+Exchange - clear pattern:  19 of 21 firms are NYSE. The only 2 that aren't
+(CHTT NASDAQ, IVX AMEX) are both in High-Growth. Risky Small Caps. The large and
+low-profit clusters are all NYSE.
+Median recommendation - partial pattern: 6 of the 9 Holds are in Large Profitable
+Leaders. Analysts would see the mature firms as fairly priced.
+High-Growth Risky Small Caps have only 1 Hold, the other 5 are Moderate Buy (3) or
+Moderate Sell (2). Analysts take sides on whether the growth pays off. The only Strong
+Buy (AHM) is in Overvalued Underperformers, and AHM is that cluster's weakest fit.
+Otherwise mixed, so the financials only explain part of the recommendations.
+Location - weak pattern:
+Large Profitable Leaders are mostly US (8 of 11), and High-Growth Risky Small Caps 4 of 6.
+Overvalued Underperformers are 3 of 4 non-US (Canada, Germany, UK), but w/ only 4 firms that
+could easily be chance.
+Only 21 firms w/ small counts per cell, so these are descriptive, not tested (chi-square
+isn't reliable w/ counts this small).
+```
 
 
 
