@@ -155,8 +155,8 @@ Market cap would have otherwise decided everything.
 Though weights weren't added manually, Euclidean distance ignores correlation, so
 size/profitability end up acting as though they have a higher weight. 
 ROE, ROA, Market Cap seem very correlated from the data/process used here.
-I also ran Manhatten distance (following our class lectures) since this is supposed
-to be better for when values are correlated - keeping the same lack of weights. 
+I also ran Manhattan distance (following our class lectures / second method may be better)
+- keeping the same lack of weights. 
 Size&Profitability would be the main ways these are determined anyway.
 Algo: kmeans w/ Euclidean distance; the 9 vars are all continuious numbers, with
 the goal being to split firms into non overlapping groups (thus why we used kmeans)
@@ -164,8 +164,8 @@ nstart=25 (from slides, but runs 25 times from random starts) with static seed s
 Also ran against 50 other seeds to verify the result would be the same (for thoroughness)
 Manhattan distance showed the 11 major firms came out the same, with 3 minor ones moving.
 I maintained Euclidean distance for the assignment since it's more stable.
-Outliers: Allergan, Chatterm
-Both are >3 SD from mean on any vars.
+Outliers: Allergan, Chattem
+Both are >3 SD from mean on one vars.
 I chose K=3 for my clustering because the silhouette peaks at k=3, and the elbow
 plot had the larger drops between 1-2 and 2-3. K=2 would have been too small to have
 meaningful clusters, so I went with 3. I also tried running this with k=5, but some
@@ -173,11 +173,12 @@ of the groups weren't visually meaningful, so I kept k=3 to maintain the clarity
 Our data set is rather small, so this made sense to me. More technically, I would
 say that k=5 made the clusters weaker, and also to note; they fell apart under manhattan.
 Quality: Avg silhouette .280; clusters are separated but not too sharply. This made
-sense with our 21 firm & no obvious data gabs. Loosest cluster was AGN-AHM-BAY-PHA (.136)
+sense with our 21 firm & no obvious data gaps. Loosest cluster was AGN-AHM-BAY-PHA (.136)
 and AHM is negative; so it's closer to other clusters than its own (technically)
 ```
 
-## b. Interpreting the clusters
+### Part B - Code
+
 ```{r}
 #names assigned from the centroids instead of cluster #, so they stay right if kmeans numbers them differently
 #added the names here after looking through the results to make the table cleaner
@@ -205,27 +206,42 @@ round(colMeans(pharmaNum), 2)
 ```
 
 
+```{r, fig.width = 9, fig.height = 5}
+#profile plot of normalized centroids, 0 = industry avg
+par(mar = c(8, 4, 2, 1))
+matplot(t(kmFinal$centers), type = "b", pch = 19, lty = 1, col = 1:bestK,
+        xaxt = "n", xlab = "", ylab = "z-score", main = "Cluster centroids")
+axis(1, at = 1:length(numVars), labels = numVars, las = 2)
+abline(h = 0, lty = 2, col = "grey50")
+legend("topright", legend = clNames, col = 1:bestK, lty = 1, pch = 19, cex = 0.7)
+```
 
+## Part B - Reasoning
 
+```
+From reading hte clusters off the centroids, Z score of 0 represents industry average.
+Positive is above; negative is below. clProfile used for the actual numbers.
+Large profitable leaders {ABT, AZN, BMY, GSK, JNJ, LLY, MRK, NVS, PFE, SGP, WYE}
+Biggest Firms (by market cap), avg of 97.1b vs 57.7b industry average. All 4 of the
+big pharma giants are in this group. 
+Best profitability ROE 35.7% (avg 25.8), ROA 15.0% (avg 10.5), net margin 20.2 (avg 15.7)
+Highest asset turnover (.80), lowest risk (.43), lowest leverage (.33).
+These have weaker growth (likely because companies of this size lose room to scale;
+i'd equate this to something similar to a population curve from biology), also indicates
+steady income for these companies.
 
+Overvalued Underperformers (AGN, AHM, BAY, PHA) 
+Highest PE 46.9 vs 25.5 average (Allergan&Pharmacia leading here at 82.5 and 56.5 respectively)
+Worst profitability; lowest ROE (11.3%) and ROA (5.1%) with net margin 6.7%
+Lower rev growth than the Large Profitable Leaders group also. This shows that
+investors pay a lot per dollar earned within this group, price === expectation, not performance.
+AHM doesn't fit great here (20.7) with k=3, would likely be separated for k=5. loosest cluster.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+High-growth Risky Small caps (AVE, CHTT, ELN, IVX, MRX, WPI)
+smallest firms with avg mcap of 9.2b, fastest growing rev growth 23.5% vs. 13.4% avg
+Riskiest - leverage 1.25 vs .59 average & highest beta .65
+Least efficient - lowest asset turnover (.48), ROA of 6%, margin of 13.5% belwo avg.
+These companies are growing, but haven't reflected strong returns yet, with PE being the
+loest at 19.4.
+```
 
