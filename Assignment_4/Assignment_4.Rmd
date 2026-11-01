@@ -283,7 +283,13 @@ Only 21 firms w/ small counts per cell, so these are descriptive, not tested (ch
 isn't reliable w/ counts this small).
 ```
 
-
+## Part D - Names!
+```
+These names were added above to help make the assignment clearer, but;
+Large Profitable Leaders-largest, highest ROE/ROA/margin + asset turnover, lowest beta, mostly Hold
+Overvalued Underperformers-highest P/E w/ the lowest profitability + growth
+High-Growth Risky Small Caps-smallest, fastest revenue growth, highest leverage + beta, both non-NYSE firms
+```
 
 
 
