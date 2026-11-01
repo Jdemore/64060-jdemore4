@@ -245,3 +245,28 @@ These companies are growing, but haven't reflected strong returns yet, with PE b
 loest at 19.4.
 ```
 
+### Part C - Code (Vars 10-12)
+```{r}
+table(pharma$clusterName, pharma$Median_Recommendation)
+table(pharma$clusterName, pharma$Location)
+table(pharma$clusterName, pharma$Exchange)
+```
+
+```{r, fig.width = 9, fig.height = 4}
+#one bar chart per var, counts per cluster
+par(mar = c(4, 13, 2, 8), xpd = TRUE)
+for (v in catVars) {
+  tab <- table(pharma[[v]], pharma$clusterName)
+  barplot(tab, horiz = TRUE, las = 1, col = rainbow(nrow(tab), s = 0.5),
+          main = v, xlab = "# of firms", cex.names = 0.8)
+  legend("right", inset = c(-0.2, 0), legend = rownames(tab),
+         fill = rainbow(nrow(tab), s = 0.5), cex = 0.7, bty = "n")
+}
+```
+
+
+
+
+
+
+
